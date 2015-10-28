@@ -1,0 +1,4 @@
+1 |hugo|hidalgo |38|hhugohm@icloud.com|04/19/1980
+2 |mario|hidalgo |33|mario.hidalgo@yahoo.com.mx|08/21/1981
+3|paimi|arizmendi|33|paiminix@hotmail.com|11/21/1981
+4|veronica|colin|38|verocc@hotmail.com|03/11/1973
