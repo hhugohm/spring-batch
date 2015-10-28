@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:batch="http://www.springframework.org/schema/batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+         http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <import resource="classpath:applicationContext.xml"/>
+    
+    
+     <batch:job id="personalJob" job-repository="jobRepository" >  
+     	<batch:step id="step1"  next="step2" >
+     		<batch:tasklet   ref="cleanTask"/>
+     	</batch:step>
+     
+     	<batch:step id="step2"  >  
+      		<batch:tasklet transaction-manager="transactionManager">  
+       			<batch:chunk reader="customReader" processor="customProcessor" writer="processFileXMLWriter" commit-interval="1"  skip-limit="10" >
+       				<batch:skippable-exception-classes>
+       					<batch:include class="org.springframework.batch.item.file.FlatFileParseException"/>
+       				</batch:skippable-exception-classes>
+       			</batch:chunk>  
+      		</batch:tasklet>  
+     	</batch:step>  
+    </batch:job>  
+     
+    <!-- ====== Task ======== -->
+    <bean id="cleanTask" class="org.neos.batch.task.CleanTask"> 
+    	<property name="resourceOut" value="${output.file}"/>
+    </bean>
+     
+    <!-- ====== READER ======== -->
+	<bean id="customReader" class="org.neos.batch.reader.ReaderFile" >
+       <property name="listaUser" >  
+            <list/>  
+        </property>
+ 		<property name="resource" value="${input.file}"/> <!-- nombre del archivo de entrada -->
+        <property name="lineMapper">
+        	<bean id="processFileLineMapper" class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+    			<property name="fieldSetMapper">
+    		 		<bean id="elementFieldSetMapper" class="org.neos.batch.domain.ResultFieldSetMapper"/>
+    			</property>
+        		<property name="lineTokenizer" >
+        			<bean id="processFileLengthLineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+        		<property name="delimiter" value="|"/>
+   					</bean>
+        		</property>    
+    		</bean>
+        </property> 
+    </bean>  
+    
+      <!-- ====== PROCESSOR ======== -->
+    <bean id="customProcessor" class="org.neos.batch.job.processor.UserProcessor">
+     	<property name="validator" ref="validator" />  
+    </bean> 
+    
+    
+     <!-- ====== WRITER ======== -->
+     
+     <bean id="processFileXMLWriter" class="org.neos.batch.writer.WriterFile">
+    	 <property  name="resource" value="${output.file}"/>
+    	 
+    	 <!--  
+    	 <property name="footerCallback" ref="tradeItemWriter" />
+    	 -->
+    	 
+    </bean>
+    
+    <bean id="validator"  class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+    	
+    </bean>  
+ <!--  
+ <bean class="org.springframework.batch.item.validator.ValidatingItemProcessor">
+    <property name="validator" ref="validator" />
+</bean>
+
+<bean id="validator"
+      class="org.springframework.batch.item.validator.SpringValidator">
+    <property name="validator">
+        <bean id="orderValidator"
+              class="org.springmodules.validation.valang.ValangValidator">
+            <property name="valang">
+                <value>
+                    <![CDATA[
+           { orderId : ? > 0 AND ? <= 9999999999 : 'Incorrect order ID' : 'error.order.id' }
+           { totalLines : ? = size(lineItems) : 'Bad count of order lines'
+                                              : 'error.order.lines.badcount'}
+           { customer.registered : customer.businessCustomer = FALSE OR ? = TRUE
+                                 : 'Business customer must be registered'
+                                 : 'error.customer.registration'}
+           { customer.companyName : customer.businessCustomer = FALSE OR ? HAS TEXT
+                                  : 'Company name for business customer is mandatory'
+                                  :'error.customer.companyname'}
+                    ]]>
+                </value>
+            </property>
+        </bean>
+    </property>
+</bean>
+
+-->
+    <!-- 
+    <bean id="tradeItemWriter" class="..TradeItemWriter">
+    	 
+	</bean>
+ -->
+     <!-- 
+    <bean id="processFileXMLWriter" class="org.springframework.batch.item.xml.StaxEventItemWriter">
+        <property name="resource" value="${output.file}"/>
+        <property name="rootTagName" value="customers"/>
+        <property name="overwriteOutput" value="true"/>
+        <property name="marshaller">
+        	 <bean id="elementMarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+        		<property name="classesToBeBound">
+                    <list>
+                        <value>org.neos.batch.domain.User</value>
+                    </list>
+         		</property>
+       			<property name="marshallerProperties">
+        		<map>
+           			<entry key="jaxb.formatted.output"><value type="java.lang.Boolean">true</value></entry>
+       			</map>
+ 				</property>
+    		</bean>
+        </property>
+    </bean>
+     -->
+</beans>

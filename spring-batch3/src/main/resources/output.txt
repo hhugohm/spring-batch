@@ -1,0 +1,4 @@
+1 hugo hidalgo 38 hhugohm@icloud.com 2015-10-21T16:31:53.216-05:00 1980-04-19T00:00:00.000-06:00 
+2 mario hidalgo 33 mario.hidalgo@yahoo.com.mx 2015-10-21T16:31:53.316-05:00 1981-08-21T00:00:00.000-06:00 
+5 roberto hernandez 25 roberto.hernandez@hotmail.com 2015-10-21T16:31:53.333-05:00 1977-10-15T00:00:00.000-06:00 
+NUMERO DE REGISTROS PROCESADOS: 3

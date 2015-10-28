@@ -1,0 +1,11 @@
+001B|20/10/2015|7
+1 |hugo|hidalgo |38|hhugohm@icloud.com|19/04/1980
+6|
+
+2 |mario|hidalgo |33|mario.hidalgo@yahoo.com.mx|21/08/1981
+3|paimi|arizmendi|33|paiminix@hotmail|21/11/1981
+
+4|veronica|colin|38|verocc@hotmail.com|11/03/1973 |sddsd
+
+5|roberto|hernandez|25|roberto.hernandez@hotmail.com|15/10/1977
+7777777|otro|apellido|55|otro@hotmail.com|15/10/1977
