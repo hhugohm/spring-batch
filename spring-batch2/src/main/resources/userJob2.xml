@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:batch="http://www.springframework.org/schema/batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+         http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <import resource="classpath:applicationContext.xml"/>
+    
+
+	<!-- Optional ItemProcessor to perform business logic/filtering on the input records -->
+    <bean id="itemUserProcessor" class="org.neos.batch.job.processor.UserBatchProcessor" />
+    
+    
+    <!-- Optional JobExecutionListener to perform business logic before and after the job -->
+    <bean id="jobListener" class="org.neos.batch.listener.ResultJobListener" />
+    
+
+    <!-- ====== JOB ====== --><!-- debe coincidir con la clase processor="elementoProcessor"  -->
+    <batch:job id="processFileJob" job-repository="jobRepository">
+        <batch:step id="processFileStep1">
+            <batch:tasklet>
+                <batch:chunk reader="processFileItemReader"
+                             processor="itemUserProcessor" 
+                             writer="processFileXMLWriter"
+                             commit-interval="1"/>
+            </batch:tasklet>
+        </batch:step>
+         <batch:listeners>
+            <batch:listener ref="jobListener" />
+        </batch:listeners>
+    </batch:job>
+
+    <!-- ====== READER ====== -->
+    <bean id="processFileItemReader"
+          class="org.neos.batch.reader.SkippableItemReader">
+        <property name="resource" value="${input.file2}"/> <!-- nombre del archivo de entrada -->
+        <!-- 
+         <property name="fieldSetMapper" ref="elementFieldSetMapper"/>
+          -->
+        
+        <property name="lineMapper" ref="processFileLineMapper"/>
+         
+    </bean>
+ 
+  
+    <bean id="processFileLineMapper"
+          class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+        <property name="fieldSetMapper" ref="elementFieldSetMapper"/>
+         
+        <property name="lineTokenizer"
+                  ref="processFileLengthLineTokenizer"/>
+                  
+                  
+    </bean>
+ 
+   
+    <bean id="elementFieldSetMapper"
+          class="org.neos.batch.domain.ResultFieldSetMapper">
+          <!--  
+        <property name="prototypeBeanName" value="element"/>
+         -->
+    </bean>
+  
+  <!-- 
+    <bean id="element"
+          class="org.neos.batch.domain.UserMapper"
+          scope="prototype"/>
+           -->
+ 
+
+    <bean id="processFileLengthLineTokenizer"
+          class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+           <!--  
+        <property name="names" value="idUser,name,lastName,old,email,bornDate"/>
+        -->
+     
+        <property name="delimiter" value="|"/>
+    </bean>
+  
+ 
+    <!-- ====== WRITER ======== -->
+    <bean id="processFileXMLWriter" class="org.springframework.batch.item.xml.StaxEventItemWriter">
+        <property name="resource" value="${output.file2}"/>
+        <property name="marshaller" ref="elementMarshaller"/>
+        <property name="rootTagName" value="customers"/>
+        <!-- 
+        <property name="overwriteOutput" value="true"/>
+         -->
+    </bean>
+
+    <bean id="elementMarshaller"
+          class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+        <property name="classesToBeBound">
+                    <list>
+                        <value>org.neos.batch.domain.User</value>
+                    </list>
+         </property>
+       <property name="marshallerProperties">
+        <map>
+           <entry key="jaxb.formatted.output"><value type="java.lang.Boolean">true</value></entry>
+         
+        </map>
+   </property>
+    </bean>
+
+    <!-- To launch the process (Maven support): mvn exec:java -Dexec.mainClass=org.springframework.batch.core.launch.support.CommandLineJobRunner
+         -Dexec.args="simpleJob.xml jobId" -->
+</beans>
