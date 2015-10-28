@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch" 
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch
+	http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+	
+	<!--
+	 <import resource="classpath:applicationContext.xml"/>
+	  -->
+	  <bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:batch-default.properties
+				</value>								
+			</list>
+		</property>
+		<property name="searchSystemEnvironment" value="true" />
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+	</bean>
+	
+	
+	
+	
+	 <batch:job id="personalJob" xmlns="http://www.springframework.org/schema/batch" restartable="true">
+     	<batch:step id="step1"  next="step2" >
+     		<batch:tasklet   ref="cleanTask"/>
+     	</batch:step>
+     
+     	<batch:step id="step2"  >  
+      		<batch:tasklet transaction-manager="transactionManager">  
+       			<batch:chunk reader="customReader" processor="customProcessor" writer="processFileXMLWriter" commit-interval="1"/>  
+      		</batch:tasklet>  
+     	</batch:step>  
+    </batch:job>  
+     
+    <!-- ====== Task ======== -->
+    <bean id="cleanTask" class="org.neos.batch.task.CleanTask"> 
+    	<property name="resourceOut" value="${output.file}"/>
+    </bean>
+     
+    <!-- ====== READER ======== -->
+	<bean id="customReader" class="org.neos.batch.reader.ReaderFile" >
+       <property name="listaUser" >  
+            <list/>  
+        </property>
+ 		<property name="resource" value="${input.file}"/> <!-- nombre del archivo de entrada -->
+        <property name="lineMapper">
+        	<bean id="processFileLineMapper" class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+    			<property name="fieldSetMapper">
+    		 		<bean id="elementFieldSetMapper" class="org.neos.batch.domain.ResultFieldSetMapper"/>
+    			</property>
+        		<property name="lineTokenizer" >
+        			<bean id="processFileLengthLineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+        		<property name="delimiter" value="|"/>
+   					</bean>
+        		</property>    
+    		</bean>
+        </property> 
+    </bean>  
+    
+      <!-- ====== PROCESSOR ======== -->
+    <bean id="customProcessor" class="org.neos.batch.job.processor.UserProcessor">
+     	<property name="validator" ref="validator" />  
+    </bean> 
+    
+    
+     <!-- ====== WRITER ======== -->
+     
+     <bean id="processFileXMLWriter" class="org.neos.batch.writer.WriterFile">
+    	 <property  name="resource" value="${output.file}"/>
+    	 
+    	 <!--  
+    	 <property name="footerCallback" ref="tradeItemWriter" />
+    	 -->
+    	 
+    </bean>
+    
+    <bean id="validator"  class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+    	
+    </bean>  
+	
+
+	
+	<job id="myjob" xmlns="http://www.springframework.org/schema/batch" restartable="true">
+   	<step id="myStep" allow-start-if-complete="true">
+   		<tasklet>
+   			<chunk reader="cvsFileItemReader" writer="itemWriter" commit-interval="1000"/>   			
+   		</tasklet>   		
+   	</step>
+   </job>
+
+     <bean id="cvsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+   	<property name="resource" value="${INPUT_FILE_LOCATION}"></property>
+   	<property name="linesToSkip" value="1"></property>
+   	<property name="lineMapper">
+   		<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+   			<property name="lineTokenizer">
+   				<bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+   					<property name="names" value="${INCOMING_COLUMN_MAPPING}"></property>
+   				</bean>
+   			</property>
+   			<property name="fieldSetMapper">
+   				<bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+   					<property name="prototypeBeanName" value="userModel"></property>
+   				</bean>
+   			</property>
+   		</bean>
+   	</property>
+
+   </bean>
+   
+     
+   <bean id="itemWriter" class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+   	<property name="dataSource" ref="dataSource"></property>
+   	<property name="sql" value="${INSERT_QUERY}">   		
+   	</property>
+   	<property name="itemSqlParameterSourceProvider">
+   		<bean class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider"/>
+   	</property>
+   </bean>
+   
+   <bean id="userModel" class="com.javacodegeeks.example.util.UserModel" scope="prototype"/>
+   
+   	
+</beans>

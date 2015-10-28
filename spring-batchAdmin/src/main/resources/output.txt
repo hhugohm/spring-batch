@@ -1,0 +1,6 @@
+1 hugo hidalgo 38 hhugohm@icloud.com 2015-10-21T16:50:27.092-05:00 1980-04-19T00:00:00.000-06:00 
+2 mario hidalgo 33 mario.hidalgo@yahoo.com.mx 2015-10-21T16:50:27.222-05:00 1981-08-21T00:00:00.000-06:00 
+3 paimi arizmendi 33 paiminix@hotmail 2015-10-21T16:50:27.228-05:00 1981-11-21T00:00:00.000-06:00 
+5 roberto hernandez 25 roberto.hernandez@hotmail.com 2015-10-21T16:50:27.234-05:00 1977-10-15T00:00:00.000-06:00 
+7777777 otro apellido 55 otro@hotmail.com 2015-10-21T16:50:27.239-05:00 1977-10-15T00:00:00.000-06:00 
+NUMERO DE REGISTROS PROCESADOS: 5
